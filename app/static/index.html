@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cover Letter Maker</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --panel: #ffffff; --ink: #1c1b19; --muted: #6d6a63; --line: #dedbd3;
+    --accent: #1f4f46; --accent-ink: #ffffff; --ok: #1f6f4a; --warn: #9a6a00; --bad: #a33a2b;
+    --ok-bg: #e4f1ea; --warn-bg: #f7edd3; --bad-bg: #f6e1dd;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151614; --panel: #1e201d; --ink: #ecebe6; --muted: #9c9a92; --line: #33352f;
+      --accent: #7fc8b6; --accent-ink: #10201c; --ok: #8fd3ae; --warn: #e3c06a; --bad: #eb9a8c;
+      --ok-bg: #1d3329; --warn-bg: #3a3118; --bad-bg: #3d221e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding: 22px 28px 6px; }
+  h1 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  main { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 20px; padding: 16px 28px 40px; align-items: start; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 12px 14px 32px; } header { padding: 16px 14px 4px; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+  label.h { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 6px; }
+  label.h:first-child { margin-top: 0; }
+  textarea, select, input[type=text] { width: 100%; font: inherit; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; }
+  textarea { resize: vertical; }
+  textarea:focus, select:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .drop { border: 1.5px dashed var(--line); border-radius: 8px; padding: 12px; text-align: center; color: var(--muted);
+    font-size: 13px; cursor: pointer; background: var(--bg); }
+  .drop.over { border-color: var(--accent); color: var(--ink); }
+  .resume { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px;
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; background: var(--bg); }
+  .resume span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .link { background: none; border: 0; color: var(--accent); font: inherit; font-size: 13px; cursor: pointer; padding: 0; white-space: nowrap; }
+  .thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .thumb { position: relative; width: 64px; height: 64px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb button { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; border: 0;
+    background: rgba(0,0,0,.65); color: #fff; font-size: 12px; line-height: 18px; padding: 0; cursor: pointer; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn { font: inherit; font-weight: 600; border-radius: 8px; padding: 10px 16px; cursor: pointer; border: 1px solid var(--line);
+    background: var(--panel); color: var(--ink); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); width: 100%; margin-top: 18px; padding: 12px; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .err { margin-top: 12px; padding: 9px 11px; border-radius: 8px; background: var(--bad-bg); color: var(--bad); font-size: 13px; }
+  .empty { color: var(--muted); text-align: center; padding: 70px 20px; }
+  .meta { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .meta b { color: var(--ink); font-size: 16px; display: block; }
+  .score { display: flex; gap: 8px; margin: 12px 0 10px; flex-wrap: wrap; }
+  .pill { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .covered { background: var(--ok-bg); color: var(--ok); }
+  .partial { background: var(--warn-bg); color: var(--warn); }
+  .missing { background: var(--bad-bg); color: var(--bad); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  td { padding: 8px 8px 8px 0; border-top: 1px solid var(--line); vertical-align: top; }
+  td:first-child { width: 86px; }
+  td .ev { color: var(--muted); display: block; }
+  details { margin-bottom: 16px; }
+  summary { cursor: pointer; font-weight: 600; font-size: 14px; padding: 4px 0; }
+  #letter { min-height: 440px; font: 15px/1.6 Georgia, "Iowan Old Style", serif; background: var(--panel); padding: 16px 18px; }
+  .actions { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+  .actions .count { margin-left: auto; color: var(--muted); font-size: 13px; }
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent;
+    border-radius: 50%; animation: s .7s linear infinite; vertical-align: -2px; margin-right: 8px; }
+  @keyframes s { to { transform: rotate(360deg); } }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cover Letter Maker</h1>
+  <p>Resume + job description in, tailored letter out.</p>
+</header>
+<main>
+  <section class="panel">
+    <label class="h">Resume (PDF)</label>
+    <div class="resume" id="resumeBox" hidden>
+      <span id="resumeName"></span>
+      <button class="link" id="resumeChange" type="button">Replace</button>
+    </div>
+    <div class="drop" id="resumeDrop">Drop your resume PDF here, or click to choose</div>
+    <input type="file" id="resumeInput" accept="application/pdf" hidden>
+
+    <label class="h" for="jd">Job description</label>
+    <textarea id="jd" rows="9" placeholder="Paste the JD text here. You can also paste a screenshot straight into this box (Ctrl+V)."></textarea>
+    <div class="drop" id="imgDrop" style="margin-top:8px">Add JD screenshots: drop, click, or paste</div>
+    <input type="file" id="imgInput" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+    <div class="thumbs" id="thumbs"></div>
+
+    <div class="row">
+      <div>
+        <label class="h" for="tone">Tone</label>
+        <select id="tone">
+          <option value="professional">Professional</option>
+          <option value="conversational">Conversational</option>
+          <option value="enthusiastic">Enthusiastic</option>
+        </select>
+      </div>
+      <div>
+        <label class="h" for="length">Length</label>
+        <select id="length">
+          <option value="short">Short (~180 words)</option>
+          <option value="standard" selected>Standard (~300)</option>
+          <option value="detailed">Detailed (~420)</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn primary" id="go" type="button">Generate cover letter</button>
+    <div class="err" id="err" hidden></div>
+  </section>
+
+  <section class="panel">
+    <div class="empty" id="empty">Your letter and the JD match summary will appear here.</div>
+    <div id="result" hidden>
+      <div class="meta"><b id="role"></b><span id="company"></span></div>
+      <div class="score" id="score"></div>
+      <details open>
+        <summary>JD match summary</summary>
+        <table id="match"></table>
+      </details>
+      <label class="h" for="letter">Letter (editable)</label>
+      <textarea id="letter" spellcheck="true"></textarea>
+      <div class="actions">
+        <button class="btn" id="pdf" type="button">Download PDF</button>
+        <button class="btn" id="copy" type="button">Copy text</button>
+        <span class="count" id="count"></span>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let resumeFile = null, storedResume = false, images = [], last = null;
+
+function showErr(msg) { $('err').textContent = msg; $('err').hidden = !msg; }
+
+// ---- resume ----
+function paintResume() {
+  const name = resumeFile ? resumeFile.name : (storedResume || '');
+  $('resumeBox').hidden = !name;
+  $('resumeDrop').hidden = !!name;
+  $('resumeName').textContent = name + (resumeFile ? '' : ' (saved)');
+}
+function setResume(f) {
+  if (!f) return;
+  if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) return showErr('Resume must be a PDF.');
+  resumeFile = f; showErr(''); paintResume();
+}
+$('resumeDrop').onclick = $('resumeChange').onclick = () => $('resumeInput').click();
+$('resumeInput').onchange = e => setResume(e.target.files[0]);
+fetch('api/resume').then(r => r.json()).then(d => { storedResume = d.stored ? (d.name || 'resume.pdf') : false; paintResume(); }).catch(() => {});
+
+// ---- JD images ----
+function addImages(files) {
+  for (const f of files) {
+    if (!f.type.startsWith('image/')) continue;
+    if (images.length >= 6) { showErr('Up to 6 screenshots.'); break; }
+    images.push(f);
+  }
+  paintThumbs();
+}
+function paintThumbs() {
+  const box = $('thumbs'); box.innerHTML = '';
+  images.forEach((f, i) => {
+    const d = document.createElement('div'); d.className = 'thumb';
+    const img = document.createElement('img'); img.src = URL.createObjectURL(f); img.alt = 'JD screenshot ' + (i + 1);
+    const x = document.createElement('button'); x.type = 'button'; x.textContent = '×'; x.title = 'Remove';
+    x.onclick = () => { images.splice(i, 1); paintThumbs(); };
+    d.append(img, x); box.append(d);
+  });
+}
+$('imgDrop').onclick = () => $('imgInput').click();
+$('imgInput').onchange = e => { addImages(e.target.files); e.target.value = ''; };
+document.addEventListener('paste', e => {
+  const files = [...(e.clipboardData?.files || [])].filter(f => f.type.startsWith('image/'));
+  if (files.length) { e.preventDefault(); addImages(files); }
+});
+function wireDrop(el, onFiles) {
+  ['dragenter', 'dragover'].forEach(t => el.addEventListener(t, e => { e.preventDefault(); el.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => el.addEventListener(t, e => { e.preventDefault(); el.classList.remove('over'); }));
+  el.addEventListener('drop', e => onFiles([...e.dataTransfer.files]));
+}
+wireDrop($('resumeDrop'), fs => setResume(fs[0]));
+wireDrop($('imgDrop'), addImages);
+wireDrop($('jd'), fs => addImages(fs));
+
+// ---- generate ----
+$('go').onclick = async () => {
+  showErr('');
+  if (!resumeFile && !storedResume) return showErr('Add your resume PDF first.');
+  if (!$('jd').value.trim() && !images.length) return showErr('Paste the job description or add a screenshot of it.');
+  const fd = new FormData();
+  if (resumeFile) fd.append('resume', resumeFile);
+  fd.append('jd_text', $('jd').value);
+  images.forEach(f => fd.append('jd_images', f, f.name || 'jd.png'));
+  fd.append('tone', $('tone').value);
+  fd.append('length', $('length').value);
+
+  const btn = $('go'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Writing...';
+  try {
+    const r = await fetch('api/generate', { method: 'POST', body: fd });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.detail || ('Request failed (' + r.status + ')'));
+    if (resumeFile) { storedResume = resumeFile.name; resumeFile = null; paintResume(); }
+    render(d);
+  } catch (e) { showErr(e.message); }
+  finally { btn.disabled = false; btn.textContent = 'Generate cover letter'; }
+};
+
+function render(d) {
+  last = d;
+  $('empty').hidden = true; $('result').hidden = false;
+  $('role').textContent = d.role || 'Cover letter';
+  $('company').textContent = d.company || '';
+  const counts = { covered: 0, partial: 0, missing: 0 };
+  const table = $('match'); table.innerHTML = '';
+  for (const m of d.match || []) {
+    const s = ['covered', 'partial', 'missing'].includes(m.status) ? m.status : 'partial';
+    counts[s]++;
+    const tr = table.insertRow();
+    const pill = document.createElement('span'); pill.className = 'pill ' + s; pill.textContent = s;
+    tr.insertCell().append(pill);
+    const td = tr.insertCell();
+    const req = document.createElement('span'); req.textContent = m.requirement || '';
+    const ev = document.createElement('span'); ev.className = 'ev'; ev.textContent = m.evidence || '';
+    td.append(req, ev);
+  }
+  const score = $('score'); score.innerHTML = '';
+  for (const s of ['covered', 'partial', 'missing']) {
+    if (!counts[s]) continue;
+    const p = document.createElement('span'); p.className = 'pill ' + s; p.textContent = counts[s] + ' ' + s; score.append(p);
+  }
+  $('letter').value = d.letter; paintCount();
+}
+function paintCount() {
+  const n = $('letter').value.trim().split(/\s+/).filter(Boolean).length;
+  $('count').textContent = n + ' words';
+}
+$('letter').oninput = paintCount;
+
+$('copy').onclick = async () => {
+  await navigator.clipboard.writeText($('letter').value);
+  $('copy').textContent = 'Copied'; setTimeout(() => $('copy').textContent = 'Copy text', 1200);
+};
+
+$('pdf').onclick = async () => {
+  const c = (last && last.candidate) || {};
+  const slug = s => (s || '').trim().replace(/\s+/g, '-');
+  const filename = ['Cover-Letter', slug(c.name), slug(last && last.company)].filter(Boolean).join('_');
+  const r = await fetch('api/pdf', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ letter: $('letter').value, name: c.name || '', contact: [c.email, c.phone, c.links], filename })
+  });
+  if (!r.ok) return showErr('Could not build the PDF.');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(await r.blob()); a.download = filename + '.pdf'; a.click();
+  URL.revokeObjectURL(a.href);
+};
+</script>
+</body>
+</html>
